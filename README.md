@@ -1,14 +1,3 @@
----
-title: Smol Town
-emoji: 🏘️
-colorFrom: indigo
-colorTo: yellow
-sdk: gradio
-app_file: app.py
-pinned: false
-license: apache-2.0
----
-
 <p align="center">
   <img src="assets/banner.png" alt="Smol Town — a whole town of tiny AI minds, alive and offline" width="100%">
 </p>
