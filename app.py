@@ -9,6 +9,7 @@ import functools
 import html
 import io
 import json
+import math
 import os
 import tempfile
 
@@ -57,6 +58,16 @@ ROSTER_HTML = "<div class='roster'>" + "".join(
     f"<div class='rcard'><span class='pav pav-{k}'></span>"
     f"<div class='rname'>{html.escape(n)}</div></div>"
     for n, k in PORTRAIT_CLS.items()) + "</div>"
+
+RELATIONSHIPS = [
+    ("Finn", "Marigold", "affection"),
+    ("Marigold", "Bram", "conflict"),
+    ("Mayor Doreen", "Finn", "affection"),
+    ("Mayor Doreen", "Hazel", "conflict"),
+    ("Pip", "Hazel", "affection"),
+    ("Old Tom", "Mayor Doreen", "secret"),
+    ("Pip", "Mayor Doreen", "secret"),
+]
 
 
 def _render(state):
@@ -151,6 +162,69 @@ def _wrap(draw, text, font, maxw):
     return out or [""]
 
 
+def _centered_text(draw, xy, text, font, fill):
+    x, y = xy
+    bbox = draw.textbbox((0, 0), text, font=font)
+    draw.text((x - (bbox[2] - bbox[0]) / 2, y), text, font=font, fill=fill)
+
+
+def relationship_graph(state):
+    W, H, cx, cy, R = 620, 640, 310, 330, 215
+    img = Image.new("RGB", (W, H), (28, 23, 20))
+    d = ImageDraw.Draw(img)
+    title_f, name_f, legend_f = _font(30), _font(18), _font(16)
+    _centered_text(d, (W / 2, 28), "The web of Tinbury", title_f, (244, 217, 160))
+
+    names = list(town.PORTRAIT.keys())
+    positions = {}
+    for i, name in enumerate(names):
+        angle = 2 * math.pi * i / len(names) - math.pi / 2
+        positions[name] = (cx + R * math.cos(angle), cy + R * math.sin(angle))
+
+    edge_cols = {
+        "affection": (120, 200, 120),
+        "conflict": (220, 90, 90),
+        "secret": (230, 190, 90),
+    }
+    for a, b, kind in RELATIONSHIPS:
+        d.line([positions[a], positions[b]], fill=edge_cols[kind], width=5)
+
+    pdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "portraits")
+    last_speaker = state.feed[-1][0] if state is not None and state.feed else None
+    node_size = 86
+    mask = Image.new("L", (node_size, node_size), 0)
+    ImageDraw.Draw(mask).ellipse((0, 0, node_size - 1, node_size - 1), fill=255)
+
+    for name in names:
+        x, y = positions[name]
+        box = (x - node_size / 2, y - node_size / 2,
+               x + node_size / 2, y + node_size / 2)
+        p = os.path.join(pdir, town.PORTRAIT[name] + ".png")
+        if os.path.exists(p):
+            with Image.open(p) as source:
+                portrait = source.convert("RGB")
+                side = min(portrait.size)
+                left = (portrait.width - side) // 2
+                top = (portrait.height - side) // 2
+                portrait = portrait.crop((left, top, left + side, top + side))
+                portrait = portrait.resize((node_size, node_size))
+        else:
+            portrait = Image.new("RGB", (node_size, node_size), (70, 58, 43))
+        img.paste(portrait, (int(box[0]), int(box[1])), mask)
+        ring = (244, 217, 160) if name == last_speaker else (90, 74, 54)
+        width = 5 if name == last_speaker else 2
+        d.ellipse(box, outline=ring, width=width)
+        _centered_text(d, (x, y + node_size / 2 + 7), name, name_f, (205, 191, 166))
+
+    legend = [("affection", (120, 200, 120)), ("conflict", (220, 90, 90)), ("secret", (230, 190, 90))]
+    ly = 555
+    for label, col in legend:
+        d.rounded_rectangle((28, ly + 4, 54, ly + 16), radius=3, fill=col)
+        d.text((64, ly), label, font=legend_f, fill=(205, 191, 166))
+        ly += 24
+    return img
+
+
 def share_card(state):
     """Render the current scene as a shareable PNG card."""
     if state is None:
@@ -183,6 +257,7 @@ with gr.Blocks(css=CSS, title="Smol Town") as demo:
                 f"Poke it. Watch the drama unfold.  \n_A cast of {len(town.CAST)} tiny local agents, running offline._",
                 elem_id="hdr")
     gr.HTML(ROSTER_HTML)
+    graph = gr.Image(label="The web of Tinbury", show_label=False)
     state = gr.State()
     feed = gr.HTML()
     with gr.Row():
@@ -190,17 +265,17 @@ with gr.Blocks(css=CSS, title="Smol Town") as demo:
         god = gr.Textbox(placeholder="⚡ Inject an event (god powers): 'a stranger rides into town'...",
                          scale=4, container=False)
         god_btn = gr.Button("⚡ Inject", scale=1)
-    gr.Markdown("**Chaos events** — poke the town:")
+    gr.Markdown("🎲 **Chaos events** — poke the town:")
     chaos_events = [
-        ("Bakery fire",
+        ("🔥 Bakery fire",
          "A fire breaks out in Finn's bakery, and Bram is the only one close enough to help."),
-        ("Stolen letter",
+        ("💌 Stolen letter",
          "Pip scrambles onto the well and reads a stolen love letter aloud to the whole square."),
-        ("A stranger",
+        ("🧳 A stranger",
          "A hooded traveler arrives at dusk, asking for Hazel by a name only her family would know."),
-        ("Tax collector",
+        ("💰 Tax collector",
          "A tax collector rides in demanding the town hand over the missing treasury gold by sundown."),
-        ("Surprise wedding",
+        ("💍 Surprise wedding",
          "Mayor Doreen announces a surprise wedding at noon and refuses to say who the couple is."),
     ]
     with gr.Row():
@@ -213,14 +288,15 @@ with gr.Blocks(css=CSS, title="Smol Town") as demo:
         trace_btn = gr.Button("Download town trace")
     card = gr.Image(label="Your shareable card (right-click → Save image)")
     trace_file = gr.File(label="Town agent trace")
-    demo.load(boot, outputs=[state, feed])
+    demo.load(boot, outputs=[state, feed]).then(relationship_graph, [state], [graph])
     share_btn.click(share_card, [state], [card])
     trace_btn.click(download_trace, [state], [trace_file])
     for chaos_btn, (_, event_text) in zip(chaos_btns, chaos_events):
-        chaos_btn.click(functools.partial(chaos, event=event_text), [state], [state, feed])
-    beat_btn.click(beat, [state], [state, feed])
-    god_btn.click(godpower, [state, god], [state, feed, god])
-    god.submit(godpower, [state, god], [state, feed, god])
+        chaos_btn.click(functools.partial(chaos, event=event_text), [state], [state, feed]).then(
+            relationship_graph, [state], [graph])
+    beat_btn.click(beat, [state], [state, feed]).then(relationship_graph, [state], [graph])
+    god_btn.click(godpower, [state, god], [state, feed, god]).then(relationship_graph, [state], [graph])
+    god.submit(godpower, [state, god], [state, feed, god]).then(relationship_graph, [state], [graph])
 
 if __name__ == "__main__":
     demo.launch()
