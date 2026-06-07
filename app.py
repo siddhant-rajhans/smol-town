@@ -19,6 +19,7 @@ CSS = """
 .feed{font-family:Georgia,serif;font-size:1.02rem;line-height:1.6;
       background:#2a2118;border-radius:12px;padding:16px 20px;color:#efe3cf;max-height:560px;overflow:auto;}
 .feed .ev{color:#d98c4a;font-style:italic;}
+.feed .av{font-size:1.15rem;margin-right:3px;}
 """
 
 
@@ -28,14 +29,24 @@ def _render(state):
         if s == "📢":
             rows.append(f"<div class='ev'>📢 {t}</div>")
         else:
-            rows.append(f"<div><b>{s}</b> — {t}</div>")
+            rows.append(f"<div><span class='av'>{town.avatar(s)}</span> <b>{s}</b> — {t}</div>")
     return "<div class='feed'>" + "<br>".join(rows) + "</div>"
 
 
 def start():
     state = town.TownState()
-    town.inject(state, f"Dawn breaks over {town.TOWN}. The marble fountain gurgles in the empty square.")
+    town.inject(state, town.OPENING_HOOK)
     return state, _render(state)
+
+
+def boot():
+    """On page load: show the scandal hook instantly, then stream in a few beats of drama."""
+    state = town.TownState()
+    town.inject(state, town.OPENING_HOOK)
+    yield state, _render(state)
+    for _ in range(3):
+        town.step(state)
+        yield state, _render(state)
 
 
 def beat(state):
@@ -64,7 +75,7 @@ with gr.Blocks(css=CSS, title="Smol Town") as demo:
         god = gr.Textbox(placeholder="⚡ Inject an event (god powers): 'a stranger rides into town'...",
                          scale=4, container=False)
         god_btn = gr.Button("⚡ Inject", scale=1)
-    demo.load(start, outputs=[state, feed])
+    demo.load(boot, outputs=[state, feed])
     beat_btn.click(beat, [state], [state, feed])
     god_btn.click(godpower, [state, god], [state, feed, god])
     god.submit(godpower, [state, god], [state, feed, god])

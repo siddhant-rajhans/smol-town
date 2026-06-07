@@ -54,6 +54,20 @@ CAST = [
              "amused by all of them, fond of nobody and everybody at once"),
 ]
 
+AVATAR = {"mayor": "🎩", "baker": "🥖", "florist": "🌹", "blacksmith": "🔨",
+          "gossip kid": "🐤", "herbalist": "🌿", "philosopher-drunk": "🍺"}
+
+
+def avatar(name):
+    for v in CAST:
+        if v.name == name:
+            return AVATAR.get(v.role, "🧑")
+    return "🧑"
+
+
+OPENING_HOOK = ("The fountain fund is GONE - and Old Tom just stood up in the square "
+                "and named the one who emptied it.")
+
 
 @dataclass
 class TownState:
@@ -125,7 +139,7 @@ def inject(state, event):
 
 def run(ticks=6):
     state = TownState()
-    inject(state, f"Dawn breaks over {TOWN}. The marble fountain gurgles in the empty square.")
+    inject(state, OPENING_HOOK)
     print(f"=== {TOWN} (model: {AGENT_MODEL}) ===")
     print(f"📢: {state.feed[-1][1]}")
     for i in range(ticks):
