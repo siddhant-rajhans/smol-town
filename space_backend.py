@@ -18,15 +18,20 @@ _tok = AutoTokenizer.from_pretrained(MODEL_ID)
 _model = AutoModelForCausalLM.from_pretrained(MODEL_ID, torch_dtype=torch.bfloat16)   # to GPU inside the call
 
 
-@spaces.GPU(duration=45)
-def generate(system, user, num_predict=90, temperature=0.95):
-    model = _model.to("cuda")
-    messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
-    ids = _tok.apply_chat_template(messages, tokenize=True, add_generation_prompt=True,
-                                   return_tensors="pt", enable_thinking=False).to("cuda")
-    out = model.generate(ids, max_new_tokens=num_predict, do_sample=True,
-                         temperature=temperature, top_p=0.95)
-    return _tok.decode(out[0][ids.shape[-1]:], skip_special_tokens=True).strip()
+@spaces.GPU(duration=60)
+def generate(system, user, num_predict=120, temperature=0.95):
+    try:
+        model = _model.to("cuda")
+        messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
+        text = _tok.apply_chat_template(messages, tokenize=False, add_generation_prompt=True,
+                                        enable_thinking=False)
+        inputs = _tok(text, return_tensors="pt").to("cuda")
+        out = model.generate(**inputs, max_new_tokens=num_predict, do_sample=True,
+                             temperature=temperature, top_p=0.95)
+        gen = out[0][inputs["input_ids"].shape[-1]:]
+        return _tok.decode(gen, skip_special_tokens=True).strip()
+    except Exception as e:
+        return "[GEN_ERROR] " + repr(e)[:400]
 
 
 town.GENERATE = generate   # Smol Town now thinks with a local in-Space model
