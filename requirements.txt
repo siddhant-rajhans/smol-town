@@ -1,3 +1,5 @@
-# Smol Town — local dev. The live ZeroGPU Space adds the in-Space model deps later
-# (e.g. spaces, huggingface_hub, transformers/llama-cpp-python).
+# Hugging Face Space (ZeroGPU) deps. Local dev only needs `gradio` (town.py talks to Ollama).
 gradio
+spaces
+transformers>=4.51
+accelerate

@@ -4,9 +4,14 @@ Build Small Hackathon - Thousand Token Wood.
     pip install -r requirements.txt
     python app.py        # set OLLAMA_BASE_URL to your Ollama (qwen3:14b now, MiniCPM later)
 """
+import os
+
 import gradio as gr
 
 import town
+
+if os.getenv("SPACE_ID"):          # on a Hugging Face Space -> load the model in-process (Off-the-Grid)
+    import space_backend  # noqa: F401   (points town.GENERATE at a local ZeroGPU model)
 
 CSS = """
 .gradio-container{background:#1c1714;}
@@ -50,7 +55,7 @@ def godpower(state, event):
 
 with gr.Blocks(css=CSS, title="Smol Town") as demo:
     gr.Markdown(f"# 🏘️ Smol Town\nA whole town of tiny minds — alive on your laptop, offline. "
-                f"Poke it. Watch the drama unfold.  \n_Cast of {len(town.CAST)} local agents · model: {town.AGENT_MODEL}_",
+                f"Poke it. Watch the drama unfold.  \n_A cast of {len(town.CAST)} tiny local agents, running offline._",
                 elem_id="hdr")
     state = gr.State()
     feed = gr.HTML()

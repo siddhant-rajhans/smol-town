@@ -73,6 +73,9 @@ def _ollama(system, user, temperature=0.95, num_predict=90):
     return json.load(urllib.request.urlopen(req, timeout=120))["message"]["content"].strip()
 
 
+GENERATE = _ollama   # swappable LLM backend; the HF Space overrides this with an in-process model
+
+
 def _clean(name, text):
     text = re.sub(r"<think>.*?</think>", "", text, flags=re.S)       # drop closed reasoning
     text = re.sub(r"<think>.*$", "", text, flags=re.S).strip()       # drop dangling reasoning
@@ -95,7 +98,7 @@ def act(state, villager):
               f"You may react to others, spread gossip, confess, scheme, or stir up drama. "
               f"Do NOT narrate or use quotation marks - just speak or act as {villager.name}.")
     user = f"Recent happenings in {TOWN}:\n{_recent(state)}\n\nIt's your moment, {villager.name}. What do you do?"
-    text = _clean(villager.name, _ollama(system, user))
+    text = _clean(villager.name, GENERATE(system, user))
     state.feed.append((villager.name, text))
     return text
 
