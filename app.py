@@ -5,6 +5,7 @@ Build Small Hackathon - Thousand Token Wood.
     python app.py        # set OLLAMA_BASE_URL to your Ollama (qwen3:14b now, MiniCPM later)
 """
 import base64
+import functools
 import html
 import io
 import json
@@ -104,6 +105,16 @@ def godpower(state, event):
     return state, _render(state), ""
 
 
+def chaos(state, event):
+    if state is None:
+        state, _ = start()
+    town.inject(state, event)
+    yield state, _render(state)
+    for _ in range(2):
+        town.step(state)
+        yield state, _render(state)
+
+
 def download_trace(state):
     """Write this session's agent traces to a temporary JSONL file."""
     if state is None:
@@ -179,6 +190,24 @@ with gr.Blocks(css=CSS, title="Smol Town") as demo:
         god = gr.Textbox(placeholder="⚡ Inject an event (god powers): 'a stranger rides into town'...",
                          scale=4, container=False)
         god_btn = gr.Button("⚡ Inject", scale=1)
+    gr.Markdown("**Chaos events** — poke the town:")
+    chaos_events = [
+        ("Bakery fire",
+         "A fire breaks out in Finn's bakery, and Bram is the only one close enough to help."),
+        ("Stolen letter",
+         "Pip scrambles onto the well and reads a stolen love letter aloud to the whole square."),
+        ("A stranger",
+         "A hooded traveler arrives at dusk, asking for Hazel by a name only her family would know."),
+        ("Tax collector",
+         "A tax collector rides in demanding the town hand over the missing treasury gold by sundown."),
+        ("Surprise wedding",
+         "Mayor Doreen announces a surprise wedding at noon and refuses to say who the couple is."),
+    ]
+    with gr.Row():
+        chaos_btns = [
+            gr.Button(label, size="sm")
+            for label, _ in chaos_events
+        ]
     with gr.Row():
         share_btn = gr.Button("📸 Share this scene")
         trace_btn = gr.Button("Download town trace")
@@ -187,6 +216,8 @@ with gr.Blocks(css=CSS, title="Smol Town") as demo:
     demo.load(boot, outputs=[state, feed])
     share_btn.click(share_card, [state], [card])
     trace_btn.click(download_trace, [state], [trace_file])
+    for chaos_btn, (_, event_text) in zip(chaos_btns, chaos_events):
+        chaos_btn.click(functools.partial(chaos, event=event_text), [state], [state, feed])
     beat_btn.click(beat, [state], [state, feed])
     god_btn.click(godpower, [state, god], [state, feed, god])
     god.submit(godpower, [state, god], [state, feed, god])
