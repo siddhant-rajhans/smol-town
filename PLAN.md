@@ -36,7 +36,8 @@ Best Demo $1k · Bonus Quest Champion $2k.
 - [ ] **FLUX** villager portraits (BFL) + cozy pixel UI (Off-Brand).
 - [ ] **Tiny Aya** multilingual gossip (Cohere).
 - [ ] Affinity/relationship tracking + day/night cycle for deeper emergence.
-- [ ] Codex public repo; publish agent trace (Sharing); deploy **ZeroGPU** Space; demo video + blog + social.
+- [x] Public repo: https://github.com/siddhant-rajhans/smol-town  (⚠ OpenAI $10k needs **Codex-attributed** commits → develop via the Codex CLI from here).
+- [ ] Publish agent trace (Sharing); deploy **ZeroGPU** Space; demo video + blog + social.
 
 ## 30-sec demo script
 Open town → click a few beats (drama escalates) → inject "a stranger arrives with a secret" → town erupts →

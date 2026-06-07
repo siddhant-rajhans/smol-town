@@ -32,4 +32,4 @@ inject events ("a stranger rides in") as god-powers.
 Vision/agents MiniCPM (central) = OpenBMB · FLUX villager portraits = BFL · Tiny Aya multilingual gossip = Cohere ·
 built with Codex = OpenAI. Badges: 🔌 Off-the-Grid · 🦙 Llama Champion · 🎨 Off-Brand · 🤖 Best Agent.
 
-Submission: demo video _TODO_ · social post _TODO_ · GitHub _TODO_
+Submission: demo video _TODO_ · social post _TODO_ · GitHub https://github.com/siddhant-rajhans/smol-town
