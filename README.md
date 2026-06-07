@@ -2,7 +2,7 @@
 title: Smol Town
 emoji: 🏘️
 colorFrom: indigo
-colorTo: orange
+colorTo: yellow
 sdk: gradio
 app_file: app.py
 pinned: false
