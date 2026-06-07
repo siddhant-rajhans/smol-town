@@ -72,6 +72,23 @@ python app.py            # point OLLAMA_BASE_URL at a local Ollama — or just o
 python town.py 12
 ```
 
+## Agent traces
+
+Every generated town beat records a structured trace with `tick`, `speaker`, `role`, `model`,
+`context` (the recent feed lines shown to the model), `system`, `output`, and an ISO-8601 UTC
+`ts`. In the app, click **Download town trace** to export the current session as JSONL.
+
+To publish an exported trace as an Apache-2.0 Hugging Face dataset:
+
+```bash
+HF_TOKEN=hf_... python scripts/publish_trace.py \
+  --repo-id your-name/smol-town-traces \
+  --file smol-town-trace.jsonl
+```
+
+The publisher validates the JSONL, uploads it under `data/`, and creates a dataset-card README
+describing the schema.
+
 ## 🏆 Built for the [Build Small Hackathon](https://huggingface.co/build-small-hackathon)
 
 *Think small: ≤32B params, a Gradio Space, and have fun with tiny, tinkerable models.* Smol Town's whole pitch **is** the constraint — a town of minds that only makes sense *because* the models are small enough to run a crowd of them at once.

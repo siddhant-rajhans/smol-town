@@ -7,7 +7,9 @@ Build Small Hackathon - Thousand Token Wood.
 import base64
 import html
 import io
+import json
 import os
+import tempfile
 
 import gradio as gr
 from PIL import Image, ImageDraw, ImageFont
@@ -102,6 +104,18 @@ def godpower(state, event):
     return state, _render(state), ""
 
 
+def download_trace(state):
+    """Write this session's agent traces to a temporary JSONL file."""
+    if state is None:
+        return None
+    with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".jsonl", prefix="smol-town-trace-",
+            delete=False) as trace_file:
+        for trace in state.traces:
+            trace_file.write(json.dumps(trace, ensure_ascii=False) + "\n")
+        return trace_file.name
+
+
 def _font(sz):
     for p in ("DejaVuSans.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"):
         try:
@@ -167,9 +181,12 @@ with gr.Blocks(css=CSS, title="Smol Town") as demo:
         god_btn = gr.Button("⚡ Inject", scale=1)
     with gr.Row():
         share_btn = gr.Button("📸 Share this scene")
+        trace_btn = gr.Button("Download town trace")
     card = gr.Image(label="Your shareable card (right-click → Save image)")
+    trace_file = gr.File(label="Town agent trace")
     demo.load(boot, outputs=[state, feed])
     share_btn.click(share_card, [state], [card])
+    trace_btn.click(download_trace, [state], [trace_file])
     beat_btn.click(beat, [state], [state, feed])
     god_btn.click(godpower, [state, god], [state, feed, god])
     god.submit(godpower, [state, god], [state, feed, god])

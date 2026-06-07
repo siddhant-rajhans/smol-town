@@ -4,3 +4,4 @@ pillow
 spaces
 transformers>=4.51
 accelerate
+huggingface_hub

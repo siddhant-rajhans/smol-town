@@ -12,6 +12,7 @@ import re
 import sys
 import urllib.request
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 AGENT_MODEL = os.getenv("AGENT_MODEL", "qwen3:14b")     # later: MiniCPM5-1B (faster + OpenBMB pool)
@@ -77,6 +78,7 @@ OPENING_HOOK = ("The fountain fund is GONE - and Old Tom just stood up in the sq
 class TownState:
     feed: list = field(default_factory=list)   # list of (speaker, text)
     tick: int = 0
+    traces: list = field(default_factory=list)
 
 
 def _ollama(system, user, temperature=0.95, num_predict=90):
@@ -103,9 +105,13 @@ def _clean(name, text):
     return text
 
 
-def _recent(state):
+def _recent_lines(state):
     lines = [f"{s}: {t}" for s, t in state.feed[-MEMORY_WINDOW:]]
-    return "\n".join(lines) if lines else "(a quiet morning; nothing has happened yet)"
+    return lines or ["(a quiet morning; nothing has happened yet)"]
+
+
+def _recent(state):
+    return "\n".join(_recent_lines(state))
 
 
 def act(state, villager):
@@ -115,8 +121,21 @@ def act(state, villager):
               f"Stay completely in character. Speak or act in ONE vivid line (max {MAX_WORDS} words). "
               f"You may react to others, spread gossip, confess, scheme, or stir up drama. "
               f"Do NOT narrate or use quotation marks - just speak or act as {villager.name}.")
-    user = f"Recent happenings in {TOWN}:\n{_recent(state)}\n\nIt's your moment, {villager.name}. What do you do?"
+    context = _recent_lines(state)
+    context_text = "\n".join(context)
+    user = (f"Recent happenings in {TOWN}:\n{context_text}\n\n"
+            f"It's your moment, {villager.name}. What do you do?")
     text = _clean(villager.name, GENERATE(system, user))
+    state.traces.append({
+        "tick": state.tick,
+        "speaker": villager.name,
+        "role": villager.role,
+        "model": AGENT_MODEL,
+        "context": context,
+        "system": system,
+        "output": text,
+        "ts": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+    })
     state.feed.append((villager.name, text))
     return text
 
