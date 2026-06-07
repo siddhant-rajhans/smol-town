@@ -1,0 +1,3 @@
+# Smol Town — local dev. The live ZeroGPU Space adds the in-Space model deps later
+# (e.g. spaces, huggingface_hub, transformers/llama-cpp-python).
+gradio
