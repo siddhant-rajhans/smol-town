@@ -1,5 +1,6 @@
 # Hugging Face Space (ZeroGPU) deps. Local dev only needs `gradio` (town.py talks to Ollama).
 gradio
+pillow
 spaces
 transformers>=4.51
 accelerate

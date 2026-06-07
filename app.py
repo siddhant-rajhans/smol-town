@@ -7,6 +7,7 @@ Build Small Hackathon - Thousand Token Wood.
 import os
 
 import gradio as gr
+from PIL import Image, ImageDraw, ImageFont
 
 import town
 
@@ -64,6 +65,57 @@ def godpower(state, event):
     return state, _render(state), ""
 
 
+def _font(sz):
+    for p in ("DejaVuSans.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"):
+        try:
+            return ImageFont.truetype(p, sz)
+        except Exception:
+            pass
+    return ImageFont.load_default()
+
+
+def _wrap(draw, text, font, maxw):
+    out, cur = [], ""
+    for w in text.split():
+        t = (cur + " " + w).strip()
+        if draw.textlength(t, font=font) <= maxw:
+            cur = t
+        else:
+            if cur:
+                out.append(cur)
+            cur = w
+    if cur:
+        out.append(cur)
+    return out or [""]
+
+
+def share_card(state):
+    """Render the current scene as a shareable PNG card."""
+    if state is None:
+        return None
+    W, pad, lh = 1080, 48, 40
+    body_f, title_f, foot_f = _font(28), _font(46), _font(22)
+    td = ImageDraw.Draw(Image.new("RGB", (W, 10)))
+    blocks = []
+    for s, t in state.feed[-7:]:
+        txt = ("» " + t) if s == "📢" else f"{s}:  {t}"
+        blocks.append((s == "📢", _wrap(td, txt, body_f, W - 2 * pad)))
+    h = pad + 84 + sum(len(b) * lh + 12 for _, b in blocks) + 56
+    img = Image.new("RGB", (W, h), (28, 23, 20))
+    d = ImageDraw.Draw(img)
+    d.text((pad, pad), "Smol Town  ·  Tinbury", font=title_f, fill=(244, 217, 160))
+    y = pad + 84
+    for is_ev, lines in blocks:
+        col = (217, 140, 74) if is_ev else (239, 227, 207)
+        for ln in lines:
+            d.text((pad, y), ln, font=body_f, fill=col)
+            y += lh
+        y += 12
+    d.text((pad, h - 42), "huggingface.co/spaces/build-small-hackathon/smol-town",
+           font=foot_f, fill=(150, 120, 90))
+    return img
+
+
 with gr.Blocks(css=CSS, title="Smol Town") as demo:
     gr.Markdown(f"# 🏘️ Smol Town\nA whole town of tiny minds — alive on your laptop, offline. "
                 f"Poke it. Watch the drama unfold.  \n_A cast of {len(town.CAST)} tiny local agents, running offline._",
@@ -75,7 +127,11 @@ with gr.Blocks(css=CSS, title="Smol Town") as demo:
         god = gr.Textbox(placeholder="⚡ Inject an event (god powers): 'a stranger rides into town'...",
                          scale=4, container=False)
         god_btn = gr.Button("⚡ Inject", scale=1)
+    with gr.Row():
+        share_btn = gr.Button("📸 Share this scene")
+    card = gr.Image(label="Your shareable card (right-click → Save image)")
     demo.load(boot, outputs=[state, feed])
+    share_btn.click(share_card, [state], [card])
     beat_btn.click(beat, [state], [state, feed])
     god_btn.click(godpower, [state, god], [state, feed, god])
     god.submit(godpower, [state, god], [state, feed, god])
