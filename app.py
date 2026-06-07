@@ -4,6 +4,8 @@ Build Small Hackathon - Thousand Token Wood.
     pip install -r requirements.txt
     python app.py        # set OLLAMA_BASE_URL to your Ollama (qwen3:14b now, MiniCPM later)
 """
+import base64
+import io
 import os
 
 import gradio as gr
@@ -24,14 +26,45 @@ CSS = """
 """
 
 
+def _build_portraits():
+    css, cls = [], {}
+    pdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "portraits")
+    for name, key in town.PORTRAIT.items():
+        p = os.path.join(pdir, key + ".png")
+        if os.path.exists(p):
+            im = Image.open(p).convert("RGB").resize((88, 88))
+            buf = io.BytesIO()
+            im.save(buf, format="JPEG", quality=82)
+            b64 = base64.b64encode(buf.getvalue()).decode()
+            css.append(f".pav-{key}{{background-image:url(data:image/jpeg;base64,{b64})}}")
+            cls[name] = key
+    return "\n".join(css), cls
+
+
+PORTRAIT_CSS, PORTRAIT_CLS = _build_portraits()
+CSS += ("\n.pav{display:inline-block;width:34px;height:34px;border-radius:50%;"
+        "background-size:cover;background-position:center top;vertical-align:middle;"
+        "margin-right:8px;border:1px solid #5a4a36}\n"
+        ".roster{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 14px}\n"
+        ".rcard{text-align:center;width:78px}\n.roster .pav{width:62px;height:62px}\n"
+        ".rname{font-size:.72rem;color:#cdbfa6;margin-top:3px}\n" + PORTRAIT_CSS)
+
+ROSTER_HTML = "<div class='roster'>" + "".join(
+    f"<div class='rcard'><span class='pav pav-{k}'></span><div class='rname'>{n}</div></div>"
+    for n, k in PORTRAIT_CLS.items()) + "</div>"
+
+
 def _render(state):
     rows = []
     for s, t in state.feed:
         if s == "📢":
             rows.append(f"<div class='ev'>📢 {t}</div>")
         else:
-            rows.append(f"<div><span class='av'>{town.avatar(s)}</span> <b>{s}</b> — {t}</div>")
-    return "<div class='feed'>" + "<br>".join(rows) + "</div>"
+            key = PORTRAIT_CLS.get(s)
+            av = (f"<span class='pav pav-{key}'></span>" if key
+                  else f"<span class='av'>{town.avatar(s)}</span>")
+            rows.append(f"<div>{av}<b>{s}</b> — {t}</div>")
+    return "<div class='feed'>" + "".join(rows) + "</div>"
 
 
 def start():
@@ -120,6 +153,7 @@ with gr.Blocks(css=CSS, title="Smol Town") as demo:
     gr.Markdown(f"# 🏘️ Smol Town\nA whole town of tiny minds — alive on your laptop, offline. "
                 f"Poke it. Watch the drama unfold.  \n_A cast of {len(town.CAST)} tiny local agents, running offline._",
                 elem_id="hdr")
+    gr.HTML(ROSTER_HTML)
     state = gr.State()
     feed = gr.HTML()
     with gr.Row():

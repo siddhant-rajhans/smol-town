@@ -11,3 +11,4 @@ outputs/
 livestream/
 _*.sh
 *.pid
+portraits/_*.png

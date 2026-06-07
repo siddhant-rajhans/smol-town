@@ -65,6 +65,10 @@ def avatar(name):
     return "🧑"
 
 
+PORTRAIT = {"Mayor Doreen": "mayor_doreen", "Finn": "finn", "Marigold": "marigold",
+            "Bram": "bram", "Pip": "pip", "Hazel": "hazel", "Old Tom": "old_tom"}
+
+
 OPENING_HOOK = ("The fountain fund is GONE - and Old Tom just stood up in the square "
                 "and named the one who emptied it.")
 
