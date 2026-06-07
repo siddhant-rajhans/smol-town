@@ -5,6 +5,7 @@ Build Small Hackathon - Thousand Token Wood.
     python app.py        # set OLLAMA_BASE_URL to your Ollama (qwen3:14b now, MiniCPM later)
 """
 import base64
+import html
 import io
 import os
 
@@ -50,20 +51,23 @@ CSS += ("\n.pav{display:inline-block;width:34px;height:34px;border-radius:50%;"
         ".rname{font-size:.72rem;color:#cdbfa6;margin-top:3px}\n" + PORTRAIT_CSS)
 
 ROSTER_HTML = "<div class='roster'>" + "".join(
-    f"<div class='rcard'><span class='pav pav-{k}'></span><div class='rname'>{n}</div></div>"
+    f"<div class='rcard'><span class='pav pav-{k}'></span>"
+    f"<div class='rname'>{html.escape(n)}</div></div>"
     for n, k in PORTRAIT_CLS.items()) + "</div>"
 
 
 def _render(state):
     rows = []
     for s, t in state.feed:
+        safe_s = html.escape(s)
+        safe_t = html.escape(t)
         if s == "📢":
-            rows.append(f"<div class='ev'>📢 {t}</div>")
+            rows.append(f"<div class='ev'>📢 {safe_t}</div>")
         else:
             key = PORTRAIT_CLS.get(s)
             av = (f"<span class='pav pav-{key}'></span>" if key
                   else f"<span class='av'>{town.avatar(s)}</span>")
-            rows.append(f"<div>{av}<b>{s}</b> — {t}</div>")
+            rows.append(f"<div>{av}<b>{safe_s}</b> — {safe_t}</div>")
     return "<div class='feed'>" + "".join(rows) + "</div>"
 
 
