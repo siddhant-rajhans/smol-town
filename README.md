@@ -87,6 +87,8 @@ Every generated town beat records a structured trace with `tick`, `speaker`, `ro
 `context` (the recent feed lines shown to the model), `system`, `output`, and an ISO-8601 UTC
 `ts`. In the app, click **Download town trace** to export the current session as JSONL.
 
+📦 **A 40-beat sample is published as a dataset:** [build-small-hackathon/smol-town-traces](https://huggingface.co/datasets/build-small-hackathon/smol-town-traces).
+
 To publish an exported trace as an Apache-2.0 Hugging Face dataset:
 
 ```bash

@@ -81,10 +81,7 @@ can be exported as JSONL from the app.
 - **Best Agent:** seven genuine agents maintain distinct personas, secrets,
   relationships, and shared recent context to create emergent behavior.
 - **Field Notes:** build report published — see [FIELD_NOTES.md](FIELD_NOTES.md).
-
-### In Progress
-
-- **Sharing is Caring:** agent-trace dataset publication in progress.
+- **Sharing is Caring:** agent-trace dataset published — [build-small-hackathon/smol-town-traces](https://huggingface.co/datasets/build-small-hackathon/smol-town-traces).
 
 ## Run It Yourself
 
