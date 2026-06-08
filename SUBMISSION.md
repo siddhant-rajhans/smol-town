@@ -36,9 +36,9 @@ model responses.
 ### Polished Gradio App
 
 The Gradio Space presents the seven-person cast, an evolving town feed, portrait
-avatars, user-controlled god-mode events, and downloadable structured agent traces.
-It opens directly on the town's central scandal so the core experience is immediately
-visible.
+avatars, a live relationship graph, one-click chaos events, user-controlled god-mode
+events, and downloadable structured agent traces. It opens directly on the town's
+central scandal so the core experience is immediately visible.
 
 ## Constraints Satisfied
 
@@ -80,10 +80,10 @@ can be exported as JSONL from the app.
 - **Tiny Titan:** every model used by the project is 4B parameters or smaller.
 - **Best Agent:** seven genuine agents maintain distinct personas, secrets,
   relationships, and shared recent context to create emergent behavior.
+- **Field Notes:** build report published — see [FIELD_NOTES.md](FIELD_NOTES.md).
 
 ### In Progress
 
-- **Field Notes:** build report in progress.
 - **Sharing is Caring:** agent-trace dataset publication in progress.
 
 ## Run It Yourself

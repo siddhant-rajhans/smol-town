@@ -38,6 +38,14 @@ No cloud APIs. No giant model. **Every mind runs locally, in the Space, on ZeroG
 
 <sub>Portraits generated locally with **FLUX.2 [klein]**.</sub>
 
+## 🕸️ A living web of relationships
+
+<p align="center">
+  <img src="assets/relationship-graph.png" alt="The web of Tinbury — the seven villagers linked by love, feuds, and secret knowledge" width="62%">
+</p>
+
+<p align="center"><i>Love 💚 · feuds ❤️ · secret knowledge 💛 — and the speaker's ring lights up live as the drama moves around town.</i></p>
+
 ## 📜 A morning in Tinbury — *completely unscripted*
 
 > 📢 *The fountain fund is gone — and Old Tom just named who emptied it.*
@@ -53,7 +61,8 @@ Nobody wrote that. The agents did.
 
 - **7 agents, one tiny model.** Each villager is a persona + a rolling **memory** of recent events. A tick loop picks who acts next (biased toward whoever was just mentioned), so lines *chain* into drama.
 - **Emergent, not scripted.** Secrets + relationships + a juicy opening event = a soap opera that writes itself.
-- **God mode.** Inject any event and watch the town react.
+- **God mode.** Inject any event — or smash a one-click **chaos button** — and watch the town react.
+- **Living relationship graph.** A portrait web of love, feuds, and secrets that highlights whoever's speaking in real time.
 - **Truly offline.** The model runs in-Space — nothing leaves the machine.
 - **Share-card.** One click turns the current scene into a postable PNG.
 
@@ -92,6 +101,8 @@ describing the schema.
 ## 🏆 Built for the [Build Small Hackathon](https://huggingface.co/build-small-hackathon)
 
 *Think small: ≤32B params, a Gradio Space, and have fun with tiny, tinkerable models.* Smol Town's whole pitch **is** the constraint — a town of minds that only makes sense *because* the models are small enough to run a crowd of them at once.
+
+📓 **[Read the Field Notes →](FIELD_NOTES.md)** — how a town of tiny minds got built.
 
 ---
 
